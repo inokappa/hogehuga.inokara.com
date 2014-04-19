@@ -22,3 +22,6 @@
 # Ignore Gemfile.lock
 /Gemfile.lock
 .gitconfig
+
+#
+config.rb

@@ -2,13 +2,13 @@
 # Blog settings
 ###
 
-Time.zone = "Tokyo"
+# Time.zone = "UTC"
 
 activate :blog do |blog|
   # This will add a prefix to all links, template references and source paths
   # blog.prefix = "blog"
 
-   blog.permalink = "{year}/{month}/{day}/{title}.html"
+  # blog.permalink = "{year}/{month}/{day}/{title}.html"
   # Matcher for blog source files
   blog.sources = "posts/{year}-{month}-{day}-{title}.html"
   # blog.taglink = "tags/{tag}.html"
@@ -60,7 +60,6 @@ Slim::Engine.set_default_options :shortcut => {
   '.' => {:tag => 'div', :attr => 'class'},
   '&' => {:tag => 'input', :attr => 'type'}
 }
-Slim::Engine.set_default_options lang: I18n.locale, locals: {}
 
 # Markdown settings 
 set :markdown, :tables => true, :autolink => true, :gh_blockcode => true, :fenced_code_blocks => true, :with_toc_data => true
@@ -104,10 +103,10 @@ activate :livereload
 # Site Settings
 ###
 # Set site setting, used in helpers / sitemap.xml / feed.xml.
-set :site_url, 'http://hogehuga.inokara.com'
-set :site_author, 'inokappa'
-set :site_title, 'かっぱのほげふが'
-set :site_description, '適当に書くよ'
+set :site_url, 'http://blog.url.com'
+set :site_author, 'Blog author'
+set :site_title, 'Blog title'
+set :site_description, 'Blog description'
 # Select the theme from bootswatch.com.
 # If false, you can get plain bootstrap style.
 # set :theme_name, 'flatly'
@@ -177,17 +176,3 @@ end
 #   deploy.password = "ftp-password"
 #   deploy.path = "ftp-path"
 # end
-
-activate :s3_sync do |s3_sync|
-  s3_sync.bucket                     = 'hogehuga.inokara.com'
-  s3_sync.region                     = 'ap-southeast-1'
-  s3_sync.aws_access_key_id          = 'AKIAIM42HWY772UOE3XQ'
-  s3_sync.aws_secret_access_key      = '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'
-  s3_sync.delete                     = false
-  s3_sync.after_build                = false
-  s3_sync.prefer_gzip                = true
-  s3_sync.path_style                 = true
-  s3_sync.reduced_redundancy_storage = false
-  s3_sync.acl                        = 'public-read'
-  s3_sync.encryption                 = false
-end
