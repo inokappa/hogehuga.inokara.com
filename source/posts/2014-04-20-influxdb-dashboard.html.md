@@ -1,7 +1,7 @@
 ---
 title: InfluxDB を引き続き触ってみるぜよ（Grafana とか使ってみる）
 date: 2014-04-20 07:48 JST
-tags: influxdb,fluentd,よくわからん
+tags: InfluxDB,fluentd,よくわからん
 ---
 
 <H2>kibana のようなダッシュボード</H2>
