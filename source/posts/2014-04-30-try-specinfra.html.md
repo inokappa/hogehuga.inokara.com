@@ -1,7 +1,7 @@
 ---
 title: Specinfra を試してみる
 date: 2014-04-30 01:37 JST
-tags: Specinfra, Serverspec
+tags: Specinfra, Serverspec, Docker
 ---
 
 <H2>はじめに</H2>
@@ -80,5 +80,101 @@ include SpecInfra::Helper::DetectOS
 
 ![](images/2014043001.png)
 
-準備も整ったところで
+準備も整ったところで `backend` のメソッド達を呼び出してみる。
 
+~~~~
+backend.methods
+~~~~
+
+以下のようにズラズラーと `backend` で利用出来るメソッド達が表示される。
+
+![](images/2014050101.png)
+
+おお。
+
+では、メソッドの中から `run_command` なんか試してみたりする。
+
+~~~~
+backend.run_command('pwd')
+~~~~
+
+以下のように `pwd` コマンドの実行結果を含んだ結果が出力された。
+
+![](images/2014050102.png)
+
+ついでに、先ほどの `backend.methods` から `commands` というメソッドを利用して、さらに...
+
+~~~~
+backend.commands.check_running('httpd')
+~~~~
+
+としてみると...以下のように `backend.check_running('httpd')` を実行する際に裏で実行される `OS` のコマンドが表示された。
+
+![](images/2014050103.png)
+
+ああ、これが各 `OS` のコマンドを抽象化しているということなのかな。
+
+***
+***
+
+<H2>私的応用</H2>
+
+横領ではなくて応用。まだまだちゃんと `Specinfra` の事は知らないけど `pry` から触っていて色々とやりたくなってきたので簡単に試してみた。
+
+***
+
+<H3>ミニマムな私的 Serverspec</H3>
+
+適当に構築した `Docker` コンテナホストに対して `Serverspec` 的なことを実行してみる。
+
+以下のスクリプトは見ての通り、
+
+ * `httpd`
+ * `sshd`
+ * `ntpd`
+
+それぞれのプロセスが起動しているかをチェックするもの。
+
+~~~~
+#!/usr/bin/env ruby
+
+require 'specinfra'
+require 'net/ssh'
+
+include SpecInfra::Helper::Ssh
+include SpecInfra::Helper::DetectOS
+
+SpecInfra.configuration.ssh = Net::SSH.start('localhost', 'sshuser', {:port => '49156', :password => 'xxxxxxx'})
+i = Backend.backend_for('ssh')
+
+PROCESSES=['httpd','sshd','ntpd']
+PROCESSES.each do |process|
+  c = i.check_running("#{process}")
+  if "#{c}" == "true"
+    puts "#{process} is running"
+  else
+    puts "#{process} is not running"
+  end
+end
+~~~~
+
+実行結果は下記の通り。
+
+![](images/2014050104.png)
+
+おお、やっていることはまさに `Serverspec` そのもの！`Serverspec` も裏側ではこのようなことが行われている...という認識を持てた。
+
+***
+
+<H3>Backend として docker が使えるようなので...</H3>
+
+ * 準備中
+
+***
+***
+
+<H2>さいごに</H2>
+
+ * `OS` のコマンドの違いを抽象化するという考え方にとても共感出来るし、`Specinfra` はその方法論の一つを具現化したものだと思う
+ * `Specinfra` を触ることで `Serverspec` が裏側でどんなことをやっているかが少し解った
+ * 自分の `Ruby` 力の低さから用語の使い方や認識に誤りがあると思われるが...も少し触ってみる
