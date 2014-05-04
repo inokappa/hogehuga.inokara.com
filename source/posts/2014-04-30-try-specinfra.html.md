@@ -23,6 +23,7 @@ tags: Specinfra, Serverspec, Docker
  * [Immutable Infrastructure時代の構成管理ツール基盤SpecInfra](https://speakerdeck.com/mizzy/specinfra-at-jaws-days-2014)
  * [specinfraを使ってみよう](http://qiita.com/sawanoboly/items/d1e7794739d9d31a5316)
  * [「Immutable Infrastructure時代の構成管理ツール基盤SpecInfra」 by 宮下 剛輔氏 #jawsdays – JAWS DAYS 2014 参加レポート Vol.06](http://dev.classmethod.jp/cloud/aws/jawsdays2014-06/)
+ * [swipely/docker-api](https://github.com/swipely/docker-api)
 
 ***
 ***
@@ -144,12 +145,11 @@ require 'net/ssh'
 include SpecInfra::Helper::Ssh
 include SpecInfra::Helper::DetectOS
 
-SpecInfra.configuration.ssh = Net::SSH.start('localhost', 'sshuser', {:port => '49156', :password => 'xxxxxxx'})
-i = Backend.backend_for('ssh')
+SpecInfra.configuration.ssh = Net::SSH.start('localhost', 'sshuser', {:port => '49156', :password => 'sshuser'})
 
 PROCESSES=['httpd','sshd','ntpd']
 PROCESSES.each do |process|
-  c = i.check_running("#{process}")
+  c = backend.check_running("#{process}")
   if "#{c}" == "true"
     puts "#{process} is running"
   else
@@ -168,7 +168,71 @@ end
 
 <H3>Backend として docker が使えるようなので...</H3>
 
- * 準備中
+`Specinfra` は `Backend` として以下のような環境が利用出来る。（他にもある）
+
+ * `ssh`
+ * `lxc`
+ * `docker`
+ * `shellscript`
+
+ということで...試してみた。例のごとく `pry` ではじめてみる。
+
+~~~~
+require 'specinfra'
+require 'docker'
+~~~~
+
+を実行すると...
+
+![](images/2014050301.png)
+
+ふむ。次にヘルパーメソッド（と呼ぶのかな？）を `include` する。
+
+~~~~
+include SpecInfra::Helper::Docker
+include SpecInfra::Helper::RedHat
+~~~~
+
+を実行すると...
+
+![](images/2014050302.png)
+
+次に `Docker API` の `URL` を指定してからコンテナイメージを指定する。
+
+~~~~
+Docker.url = 'http://127.0.0.1:4243'
+SpecInfra.configuration.docker_image = 'centos'
+~~~~
+
+![](images/2014050303.png)
+
+この状態から `backend.methods` を叩くと...
+
+![](images/2014050304.png)
+
+ほうほう。では `run_command` あたりを。
+
+~~~~
+backend.run_command ('ls')
+~~~~
+
+以下のように `centos` コンテナ内で `ls` を実行した結果が返ってきた。
+
+![](images/2014050305.png)
+
+おお、今度は `install ('httpd')` あたりを。
+
+~~~~
+backend.install ('httpd')
+~~~~
+
+以下のようにコンテナ内で `Apache` を `yum install httpd` でインストールした結果が返ってきた。
+
+![](images/2014050306.png)
+
+ファンタスティック！
+
+上記のように `Specinfra` 内で抽象化されたコマンドで `Docker` コンテナ内に `Apache` をインストールすることが出来るのを確認した。
 
 ***
 ***
@@ -178,3 +242,6 @@ end
  * `OS` のコマンドの違いを抽象化するという考え方にとても共感出来るし、`Specinfra` はその方法論の一つを具現化したものだと思う
  * `Specinfra` を触ることで `Serverspec` が裏側でどんなことをやっているかが少し解った
  * 自分の `Ruby` 力の低さから用語の使い方や認識に誤りがあると思われるが...も少し触ってみる
+
+***
+***
