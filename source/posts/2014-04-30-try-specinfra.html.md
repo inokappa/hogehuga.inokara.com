@@ -175,7 +175,13 @@ end
  * `docker`
  * `shellscript`
 
-ということで...試してみた。例のごとく `pry` ではじめてみる。
+ということで...試してみた。尚、`Backend` として `docker` を利用する場合には `docker-api` の `gem` が必要になるのでインストールする。
+
+~~~~
+sudo gem install docker-api --no-ri --no-rdoc -V
+~~~~
+
+インストールが終わったら、例のごとく `pry` ではじめてみる。
 
 ~~~~
 require 'specinfra'
